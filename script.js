@@ -5,7 +5,7 @@ let activeBaseUrl = null;
 let adPopupTimer = null;
 let adPopupIndex = 0;
 let adPopupAutoCloseTimer = null;
-let adDebugBox = null;
+let promoBoxEl = null;
 
 const ADS = [
   {
@@ -34,34 +34,8 @@ const ADS = [
   }
 ];
 
-function ensureAdDebugBox() {
-  if (adDebugBox) return adDebugBox;
-  adDebugBox = document.createElement('div');
-  adDebugBox.id = 'adDebugBox';
-  adDebugBox.style.cssText = [
-    'position:fixed',
-    'left:12px',
-    'bottom:12px',
-    'z-index:9999',
-    'max-width:min(720px,calc(100vw - 24px))',
-    'max-height:38vh',
-    'overflow:auto',
-    'padding:10px 12px',
-    'background:rgba(20,16,12,0.92)',
-    'color:#f4ede3',
-    'border:1px solid rgba(255,255,255,0.2)',
-    'font:12px/1.35 monospace',
-    'white-space:pre-wrap'
-  ].join(';');
-  document.body.appendChild(adDebugBox);
-  return adDebugBox;
-}
-
 function adDebug(message) {
-  const box = ensureAdDebugBox();
-  const now = new Date().toLocaleTimeString('ru-RU');
-  const line = `[${now}] ${message}`;
-  box.textContent = `${line}\n${box.textContent}`.slice(0, 7000);
+  void message;
 }
 
 function isLocalFrontendHost() {
@@ -547,51 +521,70 @@ function renderSideAds() {
   logRailState(right, 'RIGHT');
 }
 
+function ensurePromoBox() {
+  if (promoBoxEl) return promoBoxEl;
+  promoBoxEl = document.createElement('div');
+  promoBoxEl.id = 'promoBoxFixed';
+  promoBoxEl.style.cssText = [
+    'position:fixed',
+    'left:50%',
+    'top:50%',
+    'transform:translate(-50%,-50%)',
+    'width:min(720px,92vw)',
+    'min-height:280px',
+    'z-index:2147483647',
+    'background:#faf5ee',
+    'border:2px solid #b87040',
+    'box-shadow:0 10px 28px rgba(0,0,0,0.28)',
+    'display:none',
+    'padding:12px'
+  ].join(';');
+  promoBoxEl.innerHTML = `
+    <button id="promoBoxClose" style="position:absolute;top:8px;right:8px;width:30px;height:30px;cursor:pointer;border:1px solid #cfc7b8;background:#fff;z-index:2;">✕</button>
+    <a id="promoBoxLink" href="#" target="_blank" rel="noopener noreferrer" style="display:block;">
+      <img id="promoBoxImg" alt="promo" style="display:block;width:100%;max-height:min(78vh,720px);object-fit:contain;background:#e5dccf;">
+    </a>
+    <div id="promoBoxText" style="display:none;padding:10px;font:12px/1.4 monospace;color:#7a4f2e;">Реклама недоступна</div>
+  `;
+  document.body.appendChild(promoBoxEl);
+  const closeBtn = document.getElementById('promoBoxClose');
+  if (closeBtn) closeBtn.addEventListener('click', closeAdPopup);
+  return promoBoxEl;
+}
+
 function openAdPopup(ad) {
-  const overlay = document.getElementById('adPopupOverlay');
-  const img = document.getElementById('adPopupImage');
-  const link = document.getElementById('adPopupLink');
-  const fallback = document.getElementById('adPopupFallback');
-  if (!overlay || !img || !link) return;
+  ensurePromoBox();
+  const wrap = promoBoxEl;
+  const img = document.getElementById('promoBoxImg');
+  const link = document.getElementById('promoBoxLink');
+  const text = document.getElementById('promoBoxText');
+  if (!wrap || !img || !link || !text) return;
   if (adPopupAutoCloseTimer) clearTimeout(adPopupAutoCloseTimer);
   adDebug(`POPUP try load: ${ad.image}`);
+  wrap.style.display = 'block';
+  text.textContent = 'Загрузка рекламы...';
+  text.style.display = 'block';
+  img.style.display = 'none';
   const probe = new Image();
   probe.onload = () => {
     adDebug(`POPUP loaded: ${ad.image}`);
-    if (fallback) fallback.style.display = 'none';
-    img.style.display = 'block';
-    img.onerror = () => {
-      adDebug(`POPUP img.onerror: ${ad.image}`);
-      img.style.display = 'none';
-      if (fallback) fallback.style.display = 'block';
-      link.removeAttribute('href');
-    };
     img.src = ad.image;
     link.href = ad.href;
-    overlay.style.display = 'flex';
-    adPopupAutoCloseTimer = setTimeout(closeAdPopup, 12000);
+    img.style.display = 'block';
+    text.style.display = 'none';
   };
   probe.onerror = () => {
     adDebug(`POPUP probe.onerror: ${ad.image}`);
+    text.textContent = 'Реклама недоступна';
+    text.style.display = 'block';
     img.style.display = 'none';
-    if (fallback) fallback.style.display = 'block';
     link.removeAttribute('href');
-    overlay.style.display = 'flex';
-    adPopupAutoCloseTimer = setTimeout(closeAdPopup, 6000);
   };
   probe.src = ad.image;
 }
 
 function closeAdPopup() {
-  const overlay = document.getElementById('adPopupOverlay');
-  const img = document.getElementById('adPopupImage');
-  const fallback = document.getElementById('adPopupFallback');
-  if (overlay) overlay.style.display = 'none';
-  if (img) {
-    img.removeAttribute('src');
-    img.style.display = 'block';
-  }
-  if (fallback) fallback.style.display = 'none';
+  if (promoBoxEl) promoBoxEl.style.display = 'none';
   if (adPopupAutoCloseTimer) {
     clearTimeout(adPopupAutoCloseTimer);
     adPopupAutoCloseTimer = null;
@@ -600,19 +593,49 @@ function closeAdPopup() {
 
 function startAdPopups() {
   if (ADS.length === 0) return;
-  const closeBtn = document.getElementById('adPopupClose');
-  const overlay = document.getElementById('adPopupOverlay');
-  if (overlay) overlay.style.display = 'none';
-  if (closeBtn) closeBtn.addEventListener('click', closeAdPopup);
-  if (overlay) overlay.addEventListener('click', e => {
-    if (e.target === overlay) closeAdPopup();
-  });
-
+  // Центр + боковые: обе рекламы активны.
+  ensurePromoBox();
+  if (promoBoxEl) promoBoxEl.style.display = 'none';
+  rotateSideAds();
+  if (adPopupTimer) clearInterval(adPopupTimer);
+  setTimeout(() => {
+    const firstAd = ADS[Math.floor(Math.random() * ADS.length)];
+    openAdPopup(firstAd);
+  }, 5000);
   adPopupTimer = setInterval(() => {
-    const ad = ADS[adPopupIndex % ADS.length];
-    adPopupIndex++;
-    openAdPopup(ad);
+    rotateSideAds();
+    const randomIndex = Math.floor(Math.random() * ADS.length);
+    openAdPopup(ADS[randomIndex]);
   }, 15000);
+}
+
+function rotateSideAds() {
+  const leftCards = Array.from(document.querySelectorAll('#adRailLeft .ad-card'));
+  const rightCards = Array.from(document.querySelectorAll('#adRailRight .ad-card'));
+  if (leftCards.length === 0 && rightCards.length === 0) return;
+
+  const applyAdToCard = (card, ad) => {
+    if (!card || !ad) return;
+    const link = card.querySelector('a');
+    const img = card.querySelector('img');
+    if (!link || !img) return;
+    link.href = ad.href;
+    img.src = ad.image;
+  };
+
+  const pickAdDifferentFromCurrent = (card, used) => {
+    const currentSrc = card.querySelector('img')?.getAttribute('src') || '';
+    const pool = ADS.filter(ad => ad.image !== currentSrc && !used.has(ad.image));
+    const fallbackPool = ADS.filter(ad => ad.image !== currentSrc);
+    const candidates = pool.length > 0 ? pool : (fallbackPool.length > 0 ? fallbackPool : ADS);
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    used.add(chosen.image);
+    return chosen;
+  };
+
+  const usedThisCycle = new Set();
+  leftCards.forEach(card => applyAdToCard(card, pickAdDifferentFromCurrent(card, usedThisCycle)));
+  rightCards.forEach(card => applyAdToCard(card, pickAdDifferentFromCurrent(card, usedThisCycle)));
 }
 
 // ── Отправить / переотправить ─────────────────────────────────────────

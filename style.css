@@ -45,39 +45,50 @@ body::after {
   z-index: 0;
 }
 
-.app-layout { position: relative; z-index: 1; }
-.main-content { position: relative; z-index: 2; }
+.app-layout {
+  position: relative;
+  z-index: 1;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.main-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
 
 /* ── Ads rails ── */
 .ad-rail {
   position: fixed;
-  top: 82px;
-  bottom: 16px;
-  width: 170px;
-  z-index: 9998;
+  top: 14px;
+  width: 220px;
+  z-index: 2147483640;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  max-height: calc(100vh - 28px);
   overflow-y: auto;
-  padding: 6px;
-  background: rgba(255, 236, 178, 0.35);
-  border: 2px solid rgba(122, 79, 46, 0.75);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.35) inset;
+  padding: 8px;
+  background: #faf5ee;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28);
 }
 
-.ad-rail-left { left: 28px; }
-.ad-rail-right { right: 28px; }
+.ad-rail-left { left: 14px; }
+.ad-rail-right { right: 14px; }
 
 .ad-card {
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: none;
+  background: #faf5ee;
   overflow: hidden;
-  min-height: 170px;
-  height: 170px;
+  min-height: 220px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
-  outline: 1px dashed rgba(122, 79, 46, 0.75);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
 
 .ad-card a {
@@ -93,34 +104,35 @@ body::after {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #d9d0c2;
+  background: #e5dccf;
 }
 
 .container {
-  max-width: 1020px;
-  margin: 0 auto;
-  padding: 0 36px;
+  max-width: none;
+  margin: 0;
+  padding: 0 270px;
 }
 
 /* ── Ads popup ── */
 .ad-popup-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(20, 16, 12, 0.45);
-  z-index: 120;
+  background: transparent;
+  z-index: 10000;
   display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
+  pointer-events: none;
 }
 
 .ad-popup {
-  width: min(420px, 92vw);
+  width: min(360px, calc(100vw - 24px));
   background: #faf5ee;
-  border: 1px solid var(--border);
-  position: relative;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  border: 2px solid var(--accent2);
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28);
   min-height: 180px;
+  pointer-events: auto;
 }
 
 .ad-popup-link, .ad-popup img {
@@ -129,7 +141,7 @@ body::after {
 }
 
 .ad-popup img {
-  max-height: 70vh;
+  max-height: min(62vh, 360px);
   object-fit: contain;
   background: var(--surface);
 }
@@ -254,43 +266,6 @@ h1 .dim { color: var(--muted2); font-weight: 300; }
 }
 
 .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-
-.ad-center-showcase {
-  margin: 10px 0 30px;
-  border: 1px solid var(--border);
-  background: rgba(250, 245, 238, 0.8);
-  padding: 12px;
-}
-
-.ad-center-title {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 10px;
-}
-
-.ad-center-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.ad-center-grid a {
-  display: block;
-  height: 140px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.ad-center-grid img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: #d9d0c2;
-}
 
 .btn-primary {
   background: var(--accent);
@@ -1047,7 +1022,31 @@ footer .logo { font-size: 17px; }
 .header-left { display: flex; align-items: center; gap: 12px; }
 
 /* ── Responsive ── */
+@media (max-width: 1400px) {
+  .container { padding: 0 230px; }
+}
+
+@media (max-width: 1200px) {
+  .container { padding: 0 160px; }
+  .ad-rail { width: 140px; }
+}
+
 @media (max-width: 640px) {
+  .app-layout {
+    display: block;
+    padding: 0;
+  }
+  .ad-rail {
+    display: flex;
+    width: 120px;
+    top: 8px;
+    max-height: calc(100vh - 16px);
+    padding: 6px;
+    gap: 8px;
+  }
+  .ad-rail-left { left: 6px; }
+  .ad-rail-right { right: 6px; }
+  .ad-card { min-height: 120px; height: 120px; }
   .container { padding: 0 18px; }
   header { flex-direction: column; gap: 14px; }
   footer { flex-direction: column; gap: 14px; text-align: center; }
@@ -1055,21 +1054,11 @@ footer .logo { font-size: 17px; }
   .sessions-panel { width: 170px; }
   :root { --sessions-w: 170px; }
   .chat-header-info { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .ad-center-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 480px) {
   .sessions-panel:not(.collapsed) { position: absolute; left: 0; top: 0; bottom: 0; z-index: 5; width: 200px !important; }
   .sessions-panel-close { display: flex; }
-  .ad-rail {
-    width: 72px;
-    gap: 8px;
-    top: 10px;
-    bottom: 10px;
-  }
-  .ad-rail-left { left: 6px; }
-  .ad-rail-right { right: 6px; }
-  .ad-card { min-height: 72px; }
-  .container { padding: 0 86px; }
+  .container { padding: 0 18px; }
 }
 
