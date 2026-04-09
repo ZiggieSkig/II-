@@ -1,6 +1,6 @@
 const LOCAL_API_BASE = 'http://localhost:1234';
 const REMOTE_API_BASE = 'https://recappable-shana-pseudoinvalid.ngrok-free.dev';
-const DEFAULT_MODEL = 'google/gemma-3-4b';
+const DEFAULT_MODEL = 'gemma-4-e4b-it';
 let activeBaseUrl = null;
 let adPopupTimer = null;
 let adPopupIndex = 0;
