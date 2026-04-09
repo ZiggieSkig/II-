@@ -217,6 +217,86 @@ header {
   border-color: var(--accent2);
 }
 
+.prompts-toggle-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent2);
+  padding: 7px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.prompts-toggle-btn:hover {
+  background: var(--accent-light);
+}
+
+.prompts-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 16, 12, 0.58);
+  z-index: 2147483646;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.prompts-modal {
+  width: min(980px, 96vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #faf5ee;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 38px rgba(0,0,0,0.26);
+}
+
+.prompts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--surface);
+}
+
+.prompts-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.prompts-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompts-action-btn, .prompts-close-btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.prompts-action-btn { padding: 6px 8px; }
+.prompts-close-btn { width: 28px; height: 28px; }
+
+.prompts-body {
+  padding: 12px 14px;
+  overflow: auto;
+  font-size: 11px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
 .status-dot {
   width: 6px; height: 6px;
   border-radius: 50%;

@@ -115,6 +115,7 @@ let attachedImage  = null;
 let attachedFile   = null;
 let currentSession = null;
 let editingMsgIndex = null;
+const PROMPTS_ADMIN_PIN = '132';
 
 // ── Markdown ─────────────────────────────────────────────────────────
 function renderMarkdown(text) {
@@ -781,6 +782,118 @@ function stopGeneration() {
   if (currentAbort) { currentAbort.abort(); currentAbort = null; }
 }
 
+function extractMessageText(msg) {
+  if (!msg) return '';
+  if (typeof msg.content === 'string') return msg.content;
+  if (Array.isArray(msg.content)) {
+    return msg.content
+      .map(part => {
+        if (part?.type === 'text') return part.text || '';
+        if (part?.type === 'image_url') return '[изображение]';
+        if (part?.type === 'file') return `[файл: ${part.name || 'без имени'}]`;
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+  return '';
+}
+
+function buildPromptsReportText() {
+  const sessions = getSessions();
+  if (sessions.length === 0) return 'Сессий нет.';
+
+  const lines = [];
+  const sorted = [...sessions].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  sorted.forEach((session, index) => {
+    const title = session.preview || 'Сессия';
+    const updated = session.updatedAt
+      ? new Date(session.updatedAt).toLocaleString('ru-RU')
+      : '—';
+    lines.push(`=== СЕССИЯ ${index + 1}: ${title} ===`);
+    lines.push(`Обновлена: ${updated}`);
+
+    (session.history || []).forEach((msg, msgIndex) => {
+      if (!msg || msg.role === 'system') return;
+      const who = msg.role === 'user' ? 'USER' : (msg.role === 'assistant' ? 'ASSISTANT' : msg.role.toUpperCase());
+      const text = extractMessageText(msg).trim() || '[пусто]';
+      lines.push(`[${msgIndex + 1}] ${who}:`);
+      lines.push(text);
+      lines.push('');
+    });
+
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+function openPromptsPanel() {
+  const overlay = document.getElementById('promptsOverlay');
+  const body = document.getElementById('promptsBody');
+  if (!overlay || !body) return;
+  body.textContent = buildPromptsReportText();
+  overlay.style.display = 'flex';
+}
+
+function closePromptsPanel() {
+  const overlay = document.getElementById('promptsOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function setupPromptsPanel() {
+  const openBtn = document.getElementById('promptsToggleBtn');
+  const closeBtn = document.getElementById('promptsCloseBtn');
+  const copyBtn = document.getElementById('promptsCopyBtn');
+  const exportBtn = document.getElementById('promptsExportBtn');
+  const overlay = document.getElementById('promptsOverlay');
+  if (!openBtn || !closeBtn || !copyBtn || !exportBtn || !overlay) return;
+
+  const isPromptsUnlocked = () => sessionStorage.getItem('xxxl_prompts_unlocked') === '1';
+  const requestPromptsAccess = () => {
+    const entered = window.prompt('Введите PIN для просмотра промптов:');
+    if (entered === null) return false;
+    if (entered === PROMPTS_ADMIN_PIN) {
+      sessionStorage.setItem('xxxl_prompts_unlocked', '1');
+      return true;
+    }
+    alert('Неверный PIN');
+    return false;
+  };
+
+  openBtn.addEventListener('click', () => {
+    if (!isPromptsUnlocked() && !requestPromptsAccess()) return;
+    openPromptsPanel();
+  });
+  closeBtn.addEventListener('click', closePromptsPanel);
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closePromptsPanel();
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    const text = buildPromptsReportText();
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = 'Скопировано';
+      setTimeout(() => { copyBtn.textContent = 'Копировать'; }, 1400);
+    } catch {}
+  });
+
+  exportBtn.addEventListener('click', () => {
+    const text = buildPromptsReportText();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `xxxl-prompts-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+}
+
 function setupMusicControls() {
   const audio = document.getElementById('bgMusic');
   const toggleBtn = document.getElementById('musicToggleBtn');
@@ -789,17 +902,9 @@ function setupMusicControls() {
   const setButtonText = () => {
     toggleBtn.textContent = audio.paused ? 'Музыка: выкл' : 'Музыка: вкл';
   };
-  const showMusicError = () => {
-    toggleBtn.textContent = 'Музыка: файл не найден';
-    toggleBtn.disabled = true;
-    toggleBtn.style.opacity = '0.7';
-    toggleBtn.style.cursor = 'not-allowed';
-  };
 
   audio.volume = 0.45;
   setButtonText();
-
-  audio.addEventListener('error', showMusicError);
 
   const tryPlay = async () => {
     try {
@@ -808,27 +913,10 @@ function setupMusicControls() {
     setButtonText();
   };
 
-  // Пытаемся запустить сразу и несколько раз повторяем при старте.
+  // Пытаемся запустить сразу; если браузер блокирует, пользователь включает кнопкой.
   tryPlay();
-  const startupRetryDelays = [300, 900, 1800, 3200];
-  startupRetryDelays.forEach(delay => {
-    setTimeout(() => {
-      if (audio.paused) tryPlay();
-    }, delay);
-  });
-
-  const onFirstUserGesture = () => {
-    if (audio.paused) {
-      tryPlay();
-    }
-    window.removeEventListener('pointerdown', onFirstUserGesture);
-    window.removeEventListener('keydown', onFirstUserGesture);
-  };
-  window.addEventListener('pointerdown', onFirstUserGesture);
-  window.addEventListener('keydown', onFirstUserGesture);
 
   toggleBtn.addEventListener('click', async () => {
-    if (toggleBtn.disabled) return;
     if (audio.paused) {
       try {
         await audio.play();
@@ -887,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupDragDrop();
   setupMusicControls();
+  setupPromptsPanel();
   renderSideAds();
   startAdPopups();
   createNewSession();
