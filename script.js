@@ -1050,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSessionList();
   appendMsg('agent', renderMarkdown('Готов. Напиши задачу, перетащи изображение или файл.'), getTime());
   checkNetworkStatus();
-  setInterval(checkNetworkStatus, 15000);
+  setInterval(checkNetworkStatus, 30000);
 
   // На телефонах стартуем со скрытой панелью сессий, чтобы не перекрывала чат.
   if (window.matchMedia('(max-width: 480px)').matches) {
