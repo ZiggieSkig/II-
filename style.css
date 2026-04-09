@@ -199,6 +199,24 @@ header {
   text-transform: uppercase;
 }
 
+.music-toggle-btn {
+  background: var(--accent);
+  color: #f4ede3;
+  border: 1px solid var(--accent);
+  padding: 7px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.music-toggle-btn:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
 .status-dot {
   width: 6px; height: 6px;
   border-radius: 50%;

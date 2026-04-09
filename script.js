@@ -6,6 +6,8 @@ let adPopupTimer = null;
 let adPopupIndex = 0;
 let adPopupAutoCloseTimer = null;
 let promoBoxEl = null;
+let forcedSideLeftEl = null;
+let forcedSideRightEl = null;
 
 const ADS = [
   {
@@ -593,6 +595,8 @@ function closeAdPopup() {
 
 function startAdPopups() {
   if (ADS.length === 0) return;
+  ensureForcedSideAds();
+  renderForcedSideAds();
   // Центр + боковые: обе рекламы активны.
   ensurePromoBox();
   if (promoBoxEl) promoBoxEl.style.display = 'none';
@@ -603,10 +607,75 @@ function startAdPopups() {
     openAdPopup(firstAd);
   }, 5000);
   adPopupTimer = setInterval(() => {
+    renderForcedSideAds();
     rotateSideAds();
     const randomIndex = Math.floor(Math.random() * ADS.length);
     openAdPopup(ADS[randomIndex]);
   }, 15000);
+}
+
+function ensureForcedSideAds() {
+  const buildColumn = (side) => {
+    const col = document.createElement('div');
+    col.style.cssText = [
+      'position:fixed',
+      `${side}:10px`,
+      'top:10px',
+      'width:160px',
+      'z-index:2147483646',
+      'display:flex',
+      'flex-direction:column',
+      'gap:10px'
+    ].join(';');
+
+    for (let i = 0; i < 3; i++) {
+      const card = document.createElement('a');
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+      card.style.cssText = [
+        'display:block',
+        'height:160px',
+        'border:1px solid #cfc7b8',
+        'background:#faf5ee',
+        'box-shadow:0 6px 18px rgba(0,0,0,0.18)',
+        'overflow:hidden'
+      ].join(';');
+
+      const img = document.createElement('img');
+      img.alt = 'Реклама';
+      img.style.cssText = [
+        'display:block',
+        'width:100%',
+        'height:100%',
+        'object-fit:contain',
+        'background:#e5dccf'
+      ].join(';');
+      card.appendChild(img);
+      col.appendChild(card);
+    }
+
+    document.body.appendChild(col);
+    return col;
+  };
+
+  if (!forcedSideLeftEl) forcedSideLeftEl = buildColumn('left');
+  if (!forcedSideRightEl) forcedSideRightEl = buildColumn('right');
+}
+
+function renderForcedSideAds() {
+  if (!forcedSideLeftEl || !forcedSideRightEl || ADS.length === 0) return;
+  const cards = [
+    ...Array.from(forcedSideLeftEl.querySelectorAll('a')),
+    ...Array.from(forcedSideRightEl.querySelectorAll('a'))
+  ];
+  const shuffled = [...ADS].sort(() => Math.random() - 0.5);
+  cards.forEach((card, i) => {
+    const ad = shuffled[i % shuffled.length];
+    const img = card.querySelector('img');
+    if (!img) return;
+    card.href = ad.href;
+    img.src = ad.image;
+  });
 }
 
 function rotateSideAds() {
@@ -781,6 +850,40 @@ function stopGeneration() {
   if (currentAbort) { currentAbort.abort(); currentAbort = null; }
 }
 
+function setupMusicControls() {
+  const audio = document.getElementById('bgMusic');
+  const toggleBtn = document.getElementById('musicToggleBtn');
+  if (!audio || !toggleBtn) return;
+
+  const setButtonText = () => {
+    toggleBtn.textContent = audio.paused ? 'Музыка: выкл' : 'Музыка: вкл';
+  };
+
+  audio.volume = 0.45;
+  setButtonText();
+
+  // Пытаемся запустить сразу; если браузер блокирует, пользователь может включить кнопкой.
+  audio.play().then(() => {
+    setButtonText();
+  }).catch(() => {
+    setButtonText();
+  });
+
+  toggleBtn.addEventListener('click', async () => {
+    if (audio.paused) {
+      try {
+        await audio.play();
+      } catch {}
+    } else {
+      audio.pause();
+    }
+    setButtonText();
+  });
+
+  audio.addEventListener('play', setButtonText);
+  audio.addEventListener('pause', setButtonText);
+}
+
 // ── Утилиты ───────────────────────────────────────────────────────────
 function escapeHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -824,6 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setupDragDrop();
+  setupMusicControls();
   renderSideAds();
   startAdPopups();
   createNewSession();

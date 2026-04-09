@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<link rel="stylesheet" href="style.css?v=20260409-15">
+<link rel="stylesheet" href="style.css?v=20260409-16">
 </head>
 <body>
 <div class="app-layout">
@@ -30,6 +30,7 @@
         <div class="logo">XXXL</div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
+        <button class="music-toggle-btn" id="musicToggleBtn" type="button">Музыка: вкл</button>
         <div class="status-badge" id="statusBadge">
           <div class="status-dot" id="statusDot" style="background:var(--muted2);box-shadow:none"></div>
           <span id="statusText">Проверка...</span>
@@ -147,6 +148,8 @@
   </div>
 </div>
 
-<script src="script.js?v=20260409-24"></script>
+<audio id="bgMusic" src="./bg-music.mp3" loop preload="auto"></audio>
+
+<script src="script.js?v=20260409-26"></script>
 </body>
 </html>
