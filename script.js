@@ -6,8 +6,6 @@ let adPopupTimer = null;
 let adPopupIndex = 0;
 let adPopupAutoCloseTimer = null;
 let promoBoxEl = null;
-let forcedSideLeftEl = null;
-let forcedSideRightEl = null;
 
 const ADS = [
   {
@@ -595,8 +593,6 @@ function closeAdPopup() {
 
 function startAdPopups() {
   if (ADS.length === 0) return;
-  ensureForcedSideAds();
-  renderForcedSideAds();
   // Центр + боковые: обе рекламы активны.
   ensurePromoBox();
   if (promoBoxEl) promoBoxEl.style.display = 'none';
@@ -607,75 +603,10 @@ function startAdPopups() {
     openAdPopup(firstAd);
   }, 5000);
   adPopupTimer = setInterval(() => {
-    renderForcedSideAds();
     rotateSideAds();
     const randomIndex = Math.floor(Math.random() * ADS.length);
     openAdPopup(ADS[randomIndex]);
   }, 15000);
-}
-
-function ensureForcedSideAds() {
-  const buildColumn = (side) => {
-    const col = document.createElement('div');
-    col.style.cssText = [
-      'position:fixed',
-      `${side}:10px`,
-      'top:10px',
-      'width:160px',
-      'z-index:2147483646',
-      'display:flex',
-      'flex-direction:column',
-      'gap:10px'
-    ].join(';');
-
-    for (let i = 0; i < 3; i++) {
-      const card = document.createElement('a');
-      card.target = '_blank';
-      card.rel = 'noopener noreferrer';
-      card.style.cssText = [
-        'display:block',
-        'height:160px',
-        'border:1px solid #cfc7b8',
-        'background:#faf5ee',
-        'box-shadow:0 6px 18px rgba(0,0,0,0.18)',
-        'overflow:hidden'
-      ].join(';');
-
-      const img = document.createElement('img');
-      img.alt = 'Реклама';
-      img.style.cssText = [
-        'display:block',
-        'width:100%',
-        'height:100%',
-        'object-fit:contain',
-        'background:#e5dccf'
-      ].join(';');
-      card.appendChild(img);
-      col.appendChild(card);
-    }
-
-    document.body.appendChild(col);
-    return col;
-  };
-
-  if (!forcedSideLeftEl) forcedSideLeftEl = buildColumn('left');
-  if (!forcedSideRightEl) forcedSideRightEl = buildColumn('right');
-}
-
-function renderForcedSideAds() {
-  if (!forcedSideLeftEl || !forcedSideRightEl || ADS.length === 0) return;
-  const cards = [
-    ...Array.from(forcedSideLeftEl.querySelectorAll('a')),
-    ...Array.from(forcedSideRightEl.querySelectorAll('a'))
-  ];
-  const shuffled = [...ADS].sort(() => Math.random() - 0.5);
-  cards.forEach((card, i) => {
-    const ad = shuffled[i % shuffled.length];
-    const img = card.querySelector('img');
-    if (!img) return;
-    card.href = ad.href;
-    img.src = ad.image;
-  });
 }
 
 function rotateSideAds() {
@@ -858,18 +789,46 @@ function setupMusicControls() {
   const setButtonText = () => {
     toggleBtn.textContent = audio.paused ? 'Музыка: выкл' : 'Музыка: вкл';
   };
+  const showMusicError = () => {
+    toggleBtn.textContent = 'Музыка: файл не найден';
+    toggleBtn.disabled = true;
+    toggleBtn.style.opacity = '0.7';
+    toggleBtn.style.cursor = 'not-allowed';
+  };
 
   audio.volume = 0.45;
   setButtonText();
 
-  // Пытаемся запустить сразу; если браузер блокирует, пользователь может включить кнопкой.
-  audio.play().then(() => {
+  audio.addEventListener('error', showMusicError);
+
+  const tryPlay = async () => {
+    try {
+      await audio.play();
+    } catch {}
     setButtonText();
-  }).catch(() => {
-    setButtonText();
+  };
+
+  // Пытаемся запустить сразу и несколько раз повторяем при старте.
+  tryPlay();
+  const startupRetryDelays = [300, 900, 1800, 3200];
+  startupRetryDelays.forEach(delay => {
+    setTimeout(() => {
+      if (audio.paused) tryPlay();
+    }, delay);
   });
 
+  const onFirstUserGesture = () => {
+    if (audio.paused) {
+      tryPlay();
+    }
+    window.removeEventListener('pointerdown', onFirstUserGesture);
+    window.removeEventListener('keydown', onFirstUserGesture);
+  };
+  window.addEventListener('pointerdown', onFirstUserGesture);
+  window.addEventListener('keydown', onFirstUserGesture);
+
   toggleBtn.addEventListener('click', async () => {
+    if (toggleBtn.disabled) return;
     if (audio.paused) {
       try {
         await audio.play();
