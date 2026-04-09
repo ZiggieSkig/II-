@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<link rel="stylesheet" href="style.css?v=20260409-16">
+<link rel="stylesheet" href="style.css?v=20260409-17">
 </head>
 <body>
 <div class="app-layout">
@@ -31,6 +31,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
         <button class="music-toggle-btn" id="musicToggleBtn" type="button">Музыка: вкл</button>
+        <button class="prompts-toggle-btn" id="promptsToggleBtn" type="button">Промпты</button>
         <div class="status-badge" id="statusBadge">
           <div class="status-dot" id="statusDot" style="background:var(--muted2);box-shadow:none"></div>
           <span id="statusText">Проверка...</span>
@@ -148,8 +149,22 @@
   </div>
 </div>
 
+<div class="prompts-overlay" id="promptsOverlay" style="display:none;">
+  <div class="prompts-modal" role="dialog" aria-modal="true" aria-label="Все промпты">
+    <div class="prompts-header">
+      <div class="prompts-title">Все промпты и ответы</div>
+      <div class="prompts-actions">
+        <button class="prompts-action-btn" id="promptsCopyBtn" type="button">Копировать</button>
+        <button class="prompts-action-btn" id="promptsExportBtn" type="button">Экспорт .txt</button>
+        <button class="prompts-close-btn" id="promptsCloseBtn" type="button">✕</button>
+      </div>
+    </div>
+    <div class="prompts-body" id="promptsBody"></div>
+  </div>
+</div>
+
 <audio id="bgMusic" src="./Zvuki_-_Drel_(SkySound.cc).mp3" loop preload="auto"></audio>
 
-<script src="script.js?v=20260409-29"></script>
+<script src="script.js?v=20260409-36"></script>
 </body>
 </html>
