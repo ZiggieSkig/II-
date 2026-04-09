@@ -1153,22 +1153,67 @@ footer .logo { font-size: 17px; }
   .ad-rail { width: 140px; }
 }
 
+@media (max-width: 900px) {
+  .ad-rail { display: none; }
+  .container { padding: 0 14px; }
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  header > div[style*="display:flex"] {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .music-toggle-btn,
+  .music-next-btn,
+  .prompts-toggle-btn {
+    font-size: 8px;
+    padding: 6px 8px;
+  }
+
+  .music-track-label {
+    width: 100%;
+    font-size: 8px;
+  }
+
+  .prompts-modal {
+    width: 96vw;
+    max-height: 92vh;
+  }
+
+  .prompts-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .prompts-actions {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  #promoBoxFixed {
+    width: 94vw !important;
+    min-height: 180px !important;
+    max-height: 86vh !important;
+    padding: 10px !important;
+  }
+
+  #promoBoxImg {
+    max-height: 66vh !important;
+  }
+}
+
 @media (max-width: 640px) {
   .app-layout {
     display: block;
     padding: 0;
   }
-  .ad-rail {
-    display: flex;
-    width: 120px;
-    top: 8px;
-    max-height: calc(100vh - 16px);
-    padding: 6px;
-    gap: 8px;
-  }
-  .ad-rail-left { left: 6px; }
-  .ad-rail-right { right: 6px; }
-  .ad-card { min-height: 120px; height: 120px; }
   .container { padding: 0 18px; }
   header { flex-direction: column; gap: 14px; }
   footer { flex-direction: column; gap: 14px; text-align: center; }
@@ -1182,5 +1227,11 @@ footer .logo { font-size: 17px; }
   .sessions-panel:not(.collapsed) { position: absolute; left: 0; top: 0; bottom: 0; z-index: 5; width: 200px !important; }
   .sessions-panel-close { display: flex; }
   .container { padding: 0 18px; }
+  #promoBoxFixed {
+    width: 96vw !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
 }
 
