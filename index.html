@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<link rel="stylesheet" href="style.css?v=20260409-20">
+<link rel="stylesheet" href="style.css?v=20260409-21">
 </head>
 <body>
 <div class="app-layout">
@@ -37,7 +37,6 @@
         <button class="music-toggle-btn" id="musicToggleBtn" type="button">Музыка: вкл</button>
         <button class="music-next-btn" id="musicNextBtn" type="button">Следующий трек</button>
         <span class="music-track-label" id="musicTrackLabel">Трек: 1/4</span>
-        <button class="prompts-toggle-btn" id="promptsToggleBtn" type="button">Промпты</button>
         <div class="status-badge" id="statusBadge">
           <div class="status-dot" id="statusDot" style="background:var(--muted2);box-shadow:none"></div>
           <span id="statusText">Проверка...</span>
@@ -155,22 +154,8 @@
   </div>
 </div>
 
-<div class="prompts-overlay" id="promptsOverlay" style="display:none;">
-  <div class="prompts-modal" role="dialog" aria-modal="true" aria-label="Все промпты">
-    <div class="prompts-header">
-      <div class="prompts-title">Все промпты и ответы</div>
-      <div class="prompts-actions">
-        <button class="prompts-action-btn" id="promptsCopyBtn" type="button">Копировать</button>
-        <button class="prompts-action-btn" id="promptsExportBtn" type="button">Экспорт .txt</button>
-        <button class="prompts-close-btn" id="promptsCloseBtn" type="button">✕</button>
-      </div>
-    </div>
-    <div class="prompts-body" id="promptsBody"></div>
-  </div>
-</div>
-
 <audio id="bgMusic" src="./mus1.mp3" preload="auto"></audio>
 
-<script src="script.js?v=20260409-38"></script>
+<script src="script.js?v=20260409-46"></script>
 </body>
 </html>

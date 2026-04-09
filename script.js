@@ -150,7 +150,6 @@ let attachedImage  = null;
 let attachedFile   = null;
 let currentSession = null;
 let editingMsgIndex = null;
-const PROMPTS_ADMIN_PIN = '132';
 
 // ── Markdown ─────────────────────────────────────────────────────────
 function renderMarkdown(text) {
@@ -642,7 +641,7 @@ function startAdPopups() {
     rotateSideAds();
     const randomIndex = Math.floor(Math.random() * ADS.length);
     openAdPopup(ADS[randomIndex]);
-  }, 15000);
+  }, 45000);
 }
 
 function rotateSideAds() {
@@ -834,101 +833,6 @@ function extractMessageText(msg) {
   return '';
 }
 
-function buildPromptsReportText() {
-  const sessions = getSessions();
-  if (sessions.length === 0) return 'Сессий нет.';
-
-  const lines = [];
-  const sorted = [...sessions].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-  sorted.forEach((session, index) => {
-    const title = session.preview || 'Сессия';
-    const updated = session.updatedAt
-      ? new Date(session.updatedAt).toLocaleString('ru-RU')
-      : '—';
-    lines.push(`=== СЕССИЯ ${index + 1}: ${title} ===`);
-    lines.push(`Обновлена: ${updated}`);
-
-    (session.history || []).forEach((msg, msgIndex) => {
-      if (!msg || msg.role === 'system') return;
-      const who = msg.role === 'user' ? 'USER' : (msg.role === 'assistant' ? 'ASSISTANT' : msg.role.toUpperCase());
-      const text = extractMessageText(msg).trim() || '[пусто]';
-      lines.push(`[${msgIndex + 1}] ${who}:`);
-      lines.push(text);
-      lines.push('');
-    });
-
-    lines.push('');
-  });
-
-  return lines.join('\n');
-}
-
-function openPromptsPanel() {
-  const overlay = document.getElementById('promptsOverlay');
-  const body = document.getElementById('promptsBody');
-  if (!overlay || !body) return;
-  body.textContent = buildPromptsReportText();
-  overlay.style.display = 'flex';
-}
-
-function closePromptsPanel() {
-  const overlay = document.getElementById('promptsOverlay');
-  if (overlay) overlay.style.display = 'none';
-}
-
-function setupPromptsPanel() {
-  const openBtn = document.getElementById('promptsToggleBtn');
-  const closeBtn = document.getElementById('promptsCloseBtn');
-  const copyBtn = document.getElementById('promptsCopyBtn');
-  const exportBtn = document.getElementById('promptsExportBtn');
-  const overlay = document.getElementById('promptsOverlay');
-  if (!openBtn || !closeBtn || !copyBtn || !exportBtn || !overlay) return;
-
-  const isPromptsUnlocked = () => sessionStorage.getItem('xxxl_prompts_unlocked') === '1';
-  const requestPromptsAccess = () => {
-    const entered = window.prompt('Введите PIN для просмотра промптов:');
-    if (entered === null) return false;
-    if (entered === PROMPTS_ADMIN_PIN) {
-      sessionStorage.setItem('xxxl_prompts_unlocked', '1');
-      return true;
-    }
-    alert('Неверный PIN');
-    return false;
-  };
-
-  openBtn.addEventListener('click', () => {
-    if (!isPromptsUnlocked() && !requestPromptsAccess()) return;
-    openPromptsPanel();
-  });
-  closeBtn.addEventListener('click', closePromptsPanel);
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) closePromptsPanel();
-  });
-
-  copyBtn.addEventListener('click', async () => {
-    const text = buildPromptsReportText();
-    try {
-      await navigator.clipboard.writeText(text);
-      copyBtn.textContent = 'Скопировано';
-      setTimeout(() => { copyBtn.textContent = 'Копировать'; }, 1400);
-    } catch {}
-  });
-
-  exportBtn.addEventListener('click', () => {
-    const text = buildPromptsReportText();
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `xxxl-prompts-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-}
-
 function setupMusicControls() {
   const audio = document.getElementById('bgMusic');
   const toggleBtn = document.getElementById('musicToggleBtn');
@@ -1043,14 +947,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupDragDrop();
   setupMusicControls();
-  setupPromptsPanel();
   renderSideAds();
   startAdPopups();
   createNewSession();
   renderSessionList();
   appendMsg('agent', renderMarkdown('Готов. Напиши задачу, перетащи изображение или файл.'), getTime());
   checkNetworkStatus();
-  setInterval(checkNetworkStatus, 45000);
+  setInterval(checkNetworkStatus, 15000);
 
   // На телефонах стартуем со скрытой панелью сессий, чтобы не перекрывала чат.
   if (window.matchMedia('(max-width: 480px)').matches) {
