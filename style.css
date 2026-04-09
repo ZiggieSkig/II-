@@ -217,6 +217,30 @@ header {
   border-color: var(--accent2);
 }
 
+.music-next-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent2);
+  padding: 7px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.music-next-btn:hover {
+  background: var(--accent-light);
+}
+
+.music-track-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
 .prompts-toggle-btn {
   background: transparent;
   color: var(--accent);

@@ -31,7 +31,42 @@ const ADS = [
   {
     image: './ad6.gif',
     href: './ad6.gif'
+  },
+  {
+    image: './ad7.png',
+    href: './ad7.png'
+  },
+  {
+    image: './ad8.jpg',
+    href: './ad8.jpg'
+  },
+  {
+    image: './ad9.jpg',
+    href: './ad9.jpg'
+  },
+  {
+    image: './ad10.webp',
+    href: './ad10.webp'
+  },
+  {
+    image: './ad11.gif',
+    href: './ad11.gif'
+  },
+  {
+    image: './ad12.jpg',
+    href: './ad12.jpg'
+  },
+  {
+    image: './ad13.jpg',
+    href: './ad13.jpg'
   }
+];
+
+const MUSIC_PLAYLIST = [
+  './mus1.mp3',
+  './mus2.mp3',
+  './mus3.mp3',
+  './mus4.mp3'
 ];
 
 function adDebug(message) {
@@ -897,14 +932,29 @@ function setupPromptsPanel() {
 function setupMusicControls() {
   const audio = document.getElementById('bgMusic');
   const toggleBtn = document.getElementById('musicToggleBtn');
-  if (!audio || !toggleBtn) return;
+  const nextBtn = document.getElementById('musicNextBtn');
+  const trackLabel = document.getElementById('musicTrackLabel');
+  if (!audio || !toggleBtn || !nextBtn || !trackLabel) return;
+
+  let currentTrackIndex = 0;
 
   const setButtonText = () => {
     toggleBtn.textContent = audio.paused ? 'Музыка: выкл' : 'Музыка: вкл';
   };
+  const setTrackLabel = () => {
+    trackLabel.textContent = `Трек: ${currentTrackIndex + 1}/${MUSIC_PLAYLIST.length}`;
+  };
+  const setTrack = (idx) => {
+    currentTrackIndex = ((idx % MUSIC_PLAYLIST.length) + MUSIC_PLAYLIST.length) % MUSIC_PLAYLIST.length;
+    audio.src = MUSIC_PLAYLIST[currentTrackIndex];
+    audio.load();
+    setTrackLabel();
+  };
 
   audio.volume = 0.45;
+  setTrack(0);
   setButtonText();
+  setTrackLabel();
 
   const tryPlay = async () => {
     try {
@@ -927,8 +977,26 @@ function setupMusicControls() {
     setButtonText();
   });
 
+  nextBtn.addEventListener('click', async () => {
+    const shouldPlay = !audio.paused;
+    setTrack(currentTrackIndex + 1);
+    if (shouldPlay) {
+      try {
+        await audio.play();
+      } catch {}
+    }
+    setButtonText();
+  });
+
   audio.addEventListener('play', setButtonText);
   audio.addEventListener('pause', setButtonText);
+  audio.addEventListener('ended', async () => {
+    setTrack(currentTrackIndex + 1);
+    try {
+      await audio.play();
+    } catch {}
+    setButtonText();
+  });
 }
 
 // ── Утилиты ───────────────────────────────────────────────────────────
